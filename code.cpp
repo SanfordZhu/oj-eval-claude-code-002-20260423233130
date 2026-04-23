@@ -27,21 +27,21 @@ const int BASE_DIGITS = 9;
 
 namespace sjtu {
 
-struct Complex {
+struct FFTComplex {
     long double x, y;
-    Complex(long double x = 0, long double y = 0) : x(x), y(y) {}
-    Complex operator+(const Complex &other) const {
-        return Complex(x + other.x, y + other.y);
+    FFTComplex(long double x = 0, long double y = 0) : x(x), y(y) {}
+    FFTComplex operator+(const FFTComplex &other) const {
+        return FFTComplex(x + other.x, y + other.y);
     }
-    Complex operator-(const Complex &other) const {
-        return Complex(x - other.x, y - other.y);
+    FFTComplex operator-(const FFTComplex &other) const {
+        return FFTComplex(x - other.x, y - other.y);
     }
-    Complex operator*(const Complex &other) const {
-        return Complex(x * other.x - y * other.y, x * other.y + y * other.x);
+    FFTComplex operator*(const FFTComplex &other) const {
+        return FFTComplex(x * other.x - y * other.y, x * other.y + y * other.x);
     }
 };
 
-void fft(std::vector<Complex> &a, bool invert) {
+void fft(std::vector<FFTComplex> &a, bool invert) {
     int n = a.size();
     for (int i = 1, j = 0; i < n; i++) {
         int bit = n >> 1;
@@ -54,12 +54,12 @@ void fft(std::vector<Complex> &a, bool invert) {
 
     for (int len = 2; len <= n; len <<= 1) {
         long double ang = 2 * 3.141592653589793L / len * (invert ? -1 : 1);
-        Complex wlen(cosl(ang), sinl(ang));
+        FFTComplex wlen(cosl(ang), sinl(ang));
         for (int i = 0; i < n; i += len) {
-            Complex w(1);
+            FFTComplex w(1);
             for (int j = 0; j < len / 2; j++) {
-                Complex u = a[i + j];
-                Complex v = a[i + j + len/2] * w;
+                FFTComplex u = a[i + j];
+                FFTComplex v = a[i + j + len/2] * w;
                 a[i + j] = u + v;
                 a[i + j + len/2] = u - v;
                 w = w * wlen;
@@ -76,7 +76,7 @@ void fft(std::vector<Complex> &a, bool invert) {
 }
 
 std::vector<ll> multiply(const std::vector<ll> &a, const std::vector<ll> &b) {
-    std::vector<Complex> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+    std::vector<FFTComplex> fa(a.begin(), a.end()), fb(b.begin(), b.end());
     int n = 1;
     while (n < (int)(a.size() + b.size() - 1))
         n <<= 1;
