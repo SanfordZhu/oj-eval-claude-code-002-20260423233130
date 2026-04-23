@@ -482,7 +482,7 @@ int2048 &int2048::add(const int2048 &other) {
             int2048_private tmp = other.data;
             tmp.sub_abs(data);
             data = tmp;
-            data.negative = !data.negative;
+            // Keep the sign from other (tmp already has the correct sign from other)
         }
     }
     data.trim();
