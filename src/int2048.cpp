@@ -226,6 +226,19 @@ public:
         return carry;
     }
 
+    ll div_single(ll x, ll &remainder) {
+        ll carry = 0;
+        for (size_t i = 0; i < data.size(); i++) {
+            ll product = data[i] * x + carry;
+            data[i] = product % BASE;
+            carry = product / BASE;
+        }
+        if (carry > 0)
+            data.push_back(carry);
+        trim();
+        return carry;
+    }
+
     void div_single(ll x, ll &remainder) {
         remainder = 0;
         for (int i = data.size() - 1; i >= 0; i--) {
@@ -318,31 +331,38 @@ static int2048_private divide(int2048_private a, const int2048_private &b) {
     int2048_private b_abs = b;
     a_abs.negative = false;
     b_abs.negative = false;
-
-    int2048_private q_abs;
     int2048_private one(1);
 
-    if (a_abs.compare_abs(b_abs) < 0) {
-        q_abs = int2048_private(0);
-    } else {
-        q_abs = div_approx(a_abs, b_abs);
-        int2048_private prev;
-        while (true) {
-            int2048_private tmp = q_abs;
-            tmp.mul_abs(b_abs);
-            if (tmp.abs_greater(a_abs)) {
-                q_abs.sub_abs(one);
+    // Long division: build quotient one digit at a time from MSB to LSB
+    int2048_private quotient;
+    quotient.data.resize(a_abs.data.size());
+    int2048_private current;
+
+    for (int i = a_abs.data.size() - 1; i >= 0; i--) {
+        current.data.insert(current.data.begin(), a_abs.data[i]);
+        current.trim();
+        ll low = 0, high = BASE - 1;
+        ll best = 0;
+        // Binary search for the largest digit q where b_abs * q <= current
+        while (low <= high) {
+            ll mid = low + (high - low) / 2;
+            int2048_private tmp = b_abs;
+            tmp.mul_single(mid);
+            if (tmp.compare_abs(current) <= 0) {
+                best = mid;
+                low = mid + 1;
             } else {
-                prev = q_abs;
-                q_abs.add_abs(one);
-                tmp = q_abs;
-                tmp.mul_abs(b_abs);
-                if (tmp.abs_greater(a_abs))
-                    break;
+                high = mid - 1;
             }
         }
-        q_abs = prev;
+        quotient.data[i] = best;
+        int2048_private product = b_abs;
+        product.mul_single(best);
+        current.sub_abs(product);
     }
+
+    quotient.trim();
+    int2048_private q_abs = quotient;
 
     // Check if exact division
     int2048_private product = q_abs;
