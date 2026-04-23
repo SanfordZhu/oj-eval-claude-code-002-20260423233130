@@ -121,7 +121,9 @@ struct int2048_private {
     std::vector<ll> data;
     bool negative;
 
-    int2048_private() : negative(false) {}
+    int2048_private() : negative(false) {
+        data.push_back(0);
+    }
     int2048_private(ll n) {
         if (n < 0) {
             negative = true;
