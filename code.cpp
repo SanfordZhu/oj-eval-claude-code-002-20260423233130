@@ -1,19 +1,31 @@
-#include "int2048.h"
+#pragma once
+#ifndef SJTU_BIGINTEGER
+#define SJTU_BIGINTEGER
+
+// Integer 1:
+// Implement a signed big integer class that only needs to support simple addition and subtraction
+
+// Integer 2:
+// Implement a signed big integer class that supports addition, subtraction, multiplication, and division, and overload related operators
+
+// Do not use any header files other than the following
+#include <complex>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <vector>
 #include <algorithm>
 #include <string>
 
-namespace sjtu {
-
-using std::string;
-using std::vector;
-using std::istream;
-using std::ostream;
+// Do not use "using namespace std;"
 
 typedef unsigned int uint;
 typedef long long ll;
 
 const int BASE = 1000000000;
 const int BASE_DIGITS = 9;
+
+namespace sjtu {
 
 struct Complex {
     double x, y;
@@ -29,7 +41,7 @@ struct Complex {
     }
 };
 
-void fft(vector<Complex> &a, bool invert) {
+void fft(std::vector<Complex> &a, bool invert) {
     int n = a.size();
     for (int i = 1, j = 0; i < n; i++) {
         int bit = n >> 1;
@@ -50,7 +62,6 @@ void fft(vector<Complex> &a, bool invert) {
                 Complex v = a[i + j + len/2] * w;
                 a[i + j] = u + v;
                 a[i + j + len/2] = u - v;
-                a[i + j + len/2] = u - v;
                 w = w * wlen;
             }
         }
@@ -64,8 +75,8 @@ void fft(vector<Complex> &a, bool invert) {
     }
 }
 
-vector<ll> multiply(const vector<ll> &a, const vector<ll> &b) {
-    vector<Complex> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+std::vector<ll> multiply(const std::vector<ll> &a, const std::vector<ll> &b) {
+    std::vector<Complex> fa(a.begin(), a.end()), fb(b.begin(), b.end());
     int n = 1;
     while (n < (int)(a.size() + b.size() - 1))
         n <<= 1;
@@ -78,7 +89,7 @@ vector<ll> multiply(const vector<ll> &a, const vector<ll> &b) {
         fa[i] = fa[i] * fb[i];
     fft(fa, true);
 
-    vector<ll> result(n);
+    std::vector<ll> result(n);
     ll carry = 0;
     for (int i = 0; i < n; i++) {
         ll val = (ll)(fa[i].x + 0.5);
@@ -91,8 +102,8 @@ vector<ll> multiply(const vector<ll> &a, const vector<ll> &b) {
     return result;
 }
 
-vector<ll> multiply_naive(const vector<ll> &a, const vector<ll> &b) {
-    vector<ll> result(a.size() + b.size(), 0);
+std::vector<ll> multiply_naive(const std::vector<ll> &a, const std::vector<ll> &b) {
+    std::vector<ll> result(a.size() + b.size(), 0);
     for (size_t i = 0; i < a.size(); i++) {
         ll carry = 0;
         for (size_t j = 0; j < b.size() || carry; j++) {
@@ -106,9 +117,8 @@ vector<ll> multiply_naive(const vector<ll> &a, const vector<ll> &b) {
     return result;
 }
 
-class int2048_private {
-public:
-    vector<ll> data;
+struct int2048_private {
+    std::vector<ll> data;
     bool negative;
 
     int2048_private() : negative(false) {}
@@ -128,7 +138,7 @@ public:
             }
         }
     }
-    int2048_private(const string &s) {
+    int2048_private(const std::string &s) {
         read(s);
     }
     int2048_private(const int2048_private &other) = default;
@@ -211,30 +221,7 @@ public:
         trim();
     }
 
-    ll mul_single(ll x) {
-        ll carry = 0;
-        for (size_t i = 0; i < data.size(); i++) {
-            ll product = data[i] * x + carry;
-            data[i] = product % BASE;
-            carry = product / BASE;
-        }
-        if (carry > 0)
-            data.push_back(carry);
-        trim();
-        return carry;
-    }
-
-    void div_single(ll x, ll &remainder) {
-        remainder = 0;
-        for (int i = data.size() - 1; i >= 0; i--) {
-            ll dividend = remainder * BASE + data[i];
-            data[i] = dividend / x;
-            remainder = dividend % x;
-        }
-        trim();
-    }
-
-    void read(const string &s) {
+    void read(const std::string &s) {
         data.clear();
         if (s.empty()) {
             negative = false;
@@ -251,16 +238,16 @@ public:
         }
         for (int i = s.size() - 1; i >= start; i -= BASE_DIGITS) {
             int begin = std::max(start, i - BASE_DIGITS + 1);
-            string num = s.substr(begin, i - begin + 1);
-            data.push_back(stoi(num));
+            std::string num = s.substr(begin, i - begin + 1);
+            data.push_back(stoll(num));
         }
         trim();
     }
 
-    string to_string() const {
+    std::string to_string() const {
         if (is_zero())
             return "0";
-        string s;
+        std::string s;
         if (negative)
             s += '-';
         bool first = true;
@@ -295,13 +282,11 @@ static int2048_private div_approx(const int2048_private &a, const int2048_privat
     ll highest_b = b.data.back();
     ll approx = highest_a / (highest_b + 1);
     if (approx == 0) approx = 1;
-    int2048_private tmp_a = a;
-    ll rem;
-    tmp_a.div_single(approx, rem);
-    res = tmp_a;
-    res.negative = a.negative != b.negative;
+    res.data.push_back(approx);
     return res;
 }
+
+static int2048_private divide(int2048_private a, const int2048_private &b);
 
 static int2048_private divide(int2048_private a, const int2048_private &b) {
     if (a.is_zero())
@@ -313,9 +298,9 @@ static int2048_private divide(int2048_private a, const int2048_private &b) {
     int2048_private b_abs = b;
     a_abs.negative = false;
     b_abs.negative = false;
+    int2048_private one(1);
 
     int2048_private q_abs;
-    int2048_private one(1);
 
     if (a_abs.compare_abs(b_abs) < 0) {
         q_abs = int2048_private(0);
@@ -388,15 +373,80 @@ static int2048_private mod(const int2048_private &a, const int2048_private &b) {
     return result;
 }
 
-// int2048 implementation
+class int2048 {
+  int2048_private data;
+public:
+  // Constructors
+  int2048();
+  int2048(long long);
+  int2048(const std::string &);
+  int2048(const int2048 &);
 
-int2048::int2048() : data(*new int2048_private()) {}
+  // The parameter types of the following functions are for reference only, you can choose to use constant references or not
+  // If needed, you can add other required functions yourself
+  // ===================================
+  // Integer1
+  // ===================================
 
-int2048::int2048(long long n) : data(*new int2048_private(n)) {}
+  // Read a big integer
+  void read(const std::string &);
+  // Output the stored big integer, no need for newline
+  void print();
 
-int2048::int2048(const std::string &s) : data(*new int2048_private(s)) {}
+  // Add a big integer
+  int2048 &add(const int2048 &);
+  // Return the sum of two big integers
+  friend int2048 add(int2048, const int2048 &);
 
-int2048::int2048(const int2048 &other) : data(*new int2048_private(other.data)) {}
+  // Subtract a big integer
+  int2048 &minus(const int2048 &);
+  // Return the difference of two big integers
+  friend int2048 minus(int2048, const int2048 &);
+
+  // ===================================
+  // Integer2
+  // ===================================
+
+  int2048 operator+() const;
+  int2048 operator-() const;
+
+  int2048 &operator=(const int2048 &);
+
+  int2048 &operator+=(const int2048 &);
+  friend int2048 operator+(int2048, const int2048 &);
+
+  int2048 &operator-=(const int2048 &);
+  friend int2048 operator-(int2048, const int2048 &);
+
+  int2048 &operator*=(const int2048 &);
+  friend int2048 operator*(int2048, const int2048 &);
+
+  int2048 &operator/=(const int2048 &);
+  friend int2048 operator/(int2048, const int2048 &);
+
+  int2048 &operator%=(const int2048 &);
+  friend int2048 operator%(int2048, const int2048 &);
+
+  friend std::istream &operator>>(std::istream &, int2048 &);
+  friend std::ostream &operator<<(std::ostream &, const int2048 &);
+
+  friend bool operator==(const int2048 &, const int2048 &);
+  friend bool operator!=(const int2048 &, const int2048 &);
+  friend bool operator<(const int2048 &, const int2048 &);
+  friend bool operator>(const int2048 &, const int2048 &);
+  friend bool operator<=(const int2048 &, const int2048 &);
+  friend bool operator>=(const int2048 &, const int2048 &);
+};
+
+// Implementation
+
+int2048::int2048() : data() {}
+
+int2048::int2048(long long n) : data(n) {}
+
+int2048::int2048(const std::string &s) : data(s) {}
+
+int2048::int2048(const int2048 &other) : data(other.data) {}
 
 // Integer1 methods
 
@@ -594,3 +644,5 @@ bool operator>=(const int2048 &a, const int2048 &b) {
 }
 
 } // namespace sjtu
+
+#endif

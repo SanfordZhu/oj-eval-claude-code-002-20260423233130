@@ -18,8 +18,14 @@
 // Do not use "using namespace std;"
 
 namespace sjtu {
+
+typedef unsigned int uint;
+typedef long long ll;
+
+class int2048_private;
+
 class int2048 {
-  // todo
+  int2048_private data;
 public:
   // Constructors
   int2048();
