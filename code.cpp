@@ -28,8 +28,8 @@ const int BASE_DIGITS = 9;
 namespace sjtu {
 
 struct Complex {
-    double x, y;
-    Complex(double x = 0, double y = 0) : x(x), y(y) {}
+    long double x, y;
+    Complex(long double x = 0, long double y = 0) : x(x), y(y) {}
     Complex operator+(const Complex &other) const {
         return Complex(x + other.x, y + other.y);
     }
@@ -53,8 +53,8 @@ void fft(std::vector<Complex> &a, bool invert) {
     }
 
     for (int len = 2; len <= n; len <<= 1) {
-        double ang = 2 * 3.141592653589793 / len * (invert ? -1 : 1);
-        Complex wlen(cos(ang), sin(ang));
+        long double ang = 2 * 3.141592653589793L / len * (invert ? -1 : 1);
+        Complex wlen(cosl(ang), sinl(ang));
         for (int i = 0; i < n; i += len) {
             Complex w(1);
             for (int j = 0; j < len / 2; j++) {
