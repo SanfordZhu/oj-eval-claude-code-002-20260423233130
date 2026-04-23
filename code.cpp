@@ -215,7 +215,7 @@ struct int2048_private {
             negative = false;
             return;
         }
-        if (data.size() > 60 || other.data.size() > 60) {
+        if (data.size() > 100 || other.data.size() > 100) {
             data = multiply(data, other.data);
         } else {
             data = multiply_naive(data, other.data);
