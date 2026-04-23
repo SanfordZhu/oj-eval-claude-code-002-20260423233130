@@ -245,6 +245,9 @@ public:
         if (s[0] == '-') {
             negative = true;
             start = 1;
+        } else if (s[0] == '+') {
+            negative = false;
+            start = 1;
         } else {
             negative = false;
             start = 0;
