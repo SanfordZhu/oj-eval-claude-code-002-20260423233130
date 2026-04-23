@@ -54,7 +54,7 @@ void fft(std::vector<FFTComplex> &a, bool invert) {
 
     for (int len = 2; len <= n; len <<= 1) {
         long double ang = 2 * 3.141592653589793L / len * (invert ? -1 : 1);
-        FFTComplex wlen(cosl(ang), sinl(ang));
+        FFTComplex wlen(cos(ang), sin(ang));
         for (int i = 0; i < n; i += len) {
             FFTComplex w(1);
             for (int j = 0; j < len / 2; j++) {
